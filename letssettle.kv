@@ -1,0 +1,17 @@
+<Scroller>:
+    orientation: 'vertical'
+    padding: 10
+    spacing: 10
+    ScrollView:
+        BoxLayout:
+            id: members
+            size_hint_y: None
+            height: self.minimum_height
+            spacing: 10
+            orientation: 'vertical'
+
+    Button:
+        text: 'Add Product'
+        size_hint: (1, None)
+        height: 100
+        on_press: root.add_member()
