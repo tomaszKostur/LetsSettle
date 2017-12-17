@@ -4,7 +4,7 @@
     spacing: 10
     ScrollView:
         BoxLayout:
-            id: members
+            id: products
             size_hint_y: None
             height: self.minimum_height
             spacing: 10
@@ -15,3 +15,68 @@
         size_hint: (1, None)
         height: 100
         on_press: root.add_member()
+
+<PersonView>:
+    orientation: 'horizontal'
+    size_hint: (1, None)
+    CheckBox:
+        size_hint: (1, None)
+        active: True
+    TextInput:
+        size_hint: (1, None)
+    Label:
+        size_hint: (1, None)
+        text: 'Tomek'
+
+<PersonTitleBar>:
+    orientation: 'horizontal'
+    size_hint: (1, None)
+    Label:
+        size_hint: (1, None)
+        text: 'Used'
+    Label:
+        size_hint: (1, None)
+        text: 'Paid'
+    Label:
+        size_hint: (1, None)
+        text: 'Name'
+
+<ProductView>:
+    orientation: 'vertical'
+    padding: 10
+    spacing: 10
+    Label:
+        text: 'Product'
+        size_hint: (1, None)
+        height: 100
+    BoxLayout:
+        size_hint: (1, None)
+        height: 100
+        Label:
+            text: 'Total cost:'
+        Label:
+            text: '123 cost here'
+    ScrollView:
+#        size_hint: (1, None)
+#        height: 400
+        BoxLayout:
+            orientation: 'vertical'
+            id: people
+            size_hint: (1, None)
+            height: self.minimum_height
+            PersonTitleBar
+            PersonView
+            PersonView
+
+
+    Button:
+        text: 'Add Person'
+        size_hint: (1, None)
+        height: 100
+        on_press: root.add_person()
+
+
+<MainView>:
+    orientation: 'horizontal'
+    Scroller
+    ProductView
