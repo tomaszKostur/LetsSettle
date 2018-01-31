@@ -31,6 +31,7 @@ class ProductList(BoxLayout):
 
     def remove_product(self, uuid):
         self.ids.products.remove_widget(self.products[uuid])
+        self.products.pop(uuid)
 
 
 class PersonView(BoxLayout):
@@ -49,19 +50,23 @@ class ProductView(BoxLayout):
 
 class MainView(BoxLayout):
     products = DictProperty({})
+    c_uuid = NumericProperty(0)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.uuid = 0
-        self.c_uuid = self.uuid
 
         self.add_prod_btn = self.ids.product_list.ids.add_prod_btn
         self.add_prod_btn.bind(on_press=self.add_product)
 
+        self.rm_prod_btn = self.ids.product_list.ids.rm_prod_btn
+        self.rm_prod_btn.bind(on_press=self.remove_product)
+
+        self.ids.product_list.bind(r_uuid=self.update_c_uuid)
+
         self.add_person_btn = self.ids.product_view.ids.add_person_btn
         self.add_person_btn.bind(on_press=self.remove_product)
 
-        self.ids.product_list.bind(r_uuid=self.update_c_uuid)
 
     def update_c_uuid(self, instance, value):
         self.c_uuid = value
@@ -82,6 +87,9 @@ class MainView(BoxLayout):
 
     def remove_product(self, instance):
         self.ids.product_list.remove_product(self.c_uuid)
+        self.products.pop(self.c_uuid)
+        self.c_uuid = max(self.products)
+        print('MainView::remove_widget, c_uuid: {}'.format(self.c_uuid))
 
     def add_person(self, instance):
         print('MainView::add_person')
