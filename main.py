@@ -65,7 +65,7 @@ class MainView(BoxLayout):
         self.ids.product_list.bind(r_uuid=self.update_c_uuid)
 
         self.add_person_btn = self.ids.product_view.ids.add_person_btn
-        self.add_person_btn.bind(on_press=self.remove_product)
+        self.add_person_btn.bind(on_press=self.add_person)
 
 
     def update_c_uuid(self, instance, value):
@@ -86,20 +86,19 @@ class MainView(BoxLayout):
         self.c_uuid = prod_uuid
 
     def remove_product(self, instance):
-        self.ids.product_list.remove_product(self.c_uuid)
-        self.products.pop(self.c_uuid)
-        self.c_uuid = max(self.products)
-        print('MainView::remove_widget, c_uuid: {}'.format(self.c_uuid))
+        try:
+            self.ids.product_list.remove_product(self.c_uuid)
+            self.products.pop(self.c_uuid)
+            self.c_uuid = max(self.products)
+            print('MainView::remove_widget, c_uuid: {}'.format(self.c_uuid))
+        except (ValueError, KeyError):
+            print("nothing to remove, c_uuid:{}".format(self.c_uuid))
+        finally:
+            print(self.products)
+
 
     def add_person(self, instance):
         print('MainView::add_person')
-
-#        self.list_prop.append(prod_basic_name)
-#        self.ids.product_list.add_product(prod_basic_name)
-
-#    def on_touch_down(self, touch):
-#        print("touch huehue")
-#        return super().on_touch_down(touch)
 
 
 class LetsSettleApp(App):
