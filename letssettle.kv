@@ -1,4 +1,4 @@
-<Scroller>:
+<ProductList>:
     orientation: 'vertical'
     padding: 10
     spacing: 10
@@ -11,10 +11,10 @@
             orientation: 'vertical'
 
     Button:
+        id: add_prod_btn
         text: 'Add Product'
         size_hint: (1, None)
         height: 100
-        on_press: root.add_member()
 
 <PersonView>:
     orientation: 'horizontal'
@@ -70,6 +70,7 @@
 
 
     Button:
+        id: add_person_btn
         text: 'Add Person'
         size_hint: (1, None)
         height: 100
@@ -78,5 +79,7 @@
 
 <MainView>:
     orientation: 'horizontal'
-    Scroller
+    ProductList
+        id: product_list
     ProductView
+        id: product_view

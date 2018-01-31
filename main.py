@@ -8,12 +8,29 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.textinput import TextInput
+from kivy.properties import DictProperty, StringProperty, ListProperty, NumericProperty
 from copy import deepcopy
+from pprint import pprint
+from inspect import getmembers
 
-class Scroller(BoxLayout):
+class ProductList(BoxLayout):
+    products = {}
+    r_uuid = NumericProperty()
+    def add_product(self, name, uuid):
+        product_button = Button(size_hint=(1, None), height=100,
+                                text=name)
+        product_button.uuid = uuid
+        self.products[uuid] = product_button
+        self.ids.products.add_widget(product_button)
 
-    def add_member(self):
-        self.ids.products.add_widget(Button(size_hint=(1, None), height=100))
+        product_button.bind(on_press=self.get_pressed_uuid)
+
+    def get_pressed_uuid(self, instance):
+        print('presed uuid: {}'.format(instance.uuid))
+        self.r_uuid = instance.uuid
+
+    def remove_product(self, uuid):
+        self.ids.products.remove_widget(self.products[uuid])
 
 
 class PersonView(BoxLayout):
@@ -31,10 +48,54 @@ class ProductView(BoxLayout):
 
 
 class MainView(BoxLayout):
-    pass
+    products = DictProperty({})
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.uuid = 0
+        self.c_uuid = self.uuid
+
+        self.add_prod_btn = self.ids.product_list.ids.add_prod_btn
+        self.add_prod_btn.bind(on_press=self.add_product)
+
+        self.add_person_btn = self.ids.product_view.ids.add_person_btn
+        self.add_person_btn.bind(on_press=self.remove_product)
+
+        self.ids.product_list.bind(r_uuid=self.update_c_uuid)
+
+    def update_c_uuid(self, instance, value):
+        self.c_uuid = value
+        print('MainView::update_c_uuid: {}'.format(self.c_uuid))
+
+    def _get_uuid(self):
+        self.uuid += 1
+        return self.uuid
+
+    def add_product(self, instance):
+        print('MainView::add_product')
+        prod_tmp_name = 'product_{}'.format(len(self.products))
+        prod_name = StringProperty(prod_tmp_name)
+        prod_uuid = self._get_uuid()
+        self.ids.product_list.add_product(prod_tmp_name, prod_uuid)
+        self.products[prod_uuid] = {prod_name: {}}
+        self.c_uuid = prod_uuid
+
+    def remove_product(self, instance):
+        self.ids.product_list.remove_product(self.c_uuid)
+
+    def add_person(self, instance):
+        print('MainView::add_person')
+
+#        self.list_prop.append(prod_basic_name)
+#        self.ids.product_list.add_product(prod_basic_name)
+
+#    def on_touch_down(self, touch):
+#        print("touch huehue")
+#        return super().on_touch_down(touch)
 
 
 class LetsSettleApp(App):
+
     def build(self):
         self.main_view = MainView()
         return self.main_view
