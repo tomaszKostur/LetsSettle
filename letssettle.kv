@@ -32,7 +32,7 @@
         size_hint: (1, None)
     Label:
         size_hint: (1, None)
-        text: 'Tomek'
+        text: root.name
 
 <PersonTitleBar>:
     orientation: 'horizontal'
@@ -52,6 +52,7 @@
     padding: 10
     spacing: 10
     Label:
+        id: product_name
         text: 'Product'
         size_hint: (1, None)
         height: 100
@@ -62,6 +63,7 @@
             text: 'Total cost:'
         Label:
             text: '123 cost here'
+    PersonTitleBar
     ScrollView:
 #        size_hint: (1, None)
 #        height: 400
@@ -70,9 +72,9 @@
             id: people
             size_hint: (1, None)
             height: self.minimum_height
-            PersonTitleBar
-            PersonView
-            PersonView
+
+#            PersonView
+#            PersonView
 
 
     Button:
@@ -80,7 +82,7 @@
         text: 'Add Person'
         size_hint: (1, None)
         height: 100
-        on_press: root.add_person()
+#        on_press: root.add_person()
 
 
 <MainView>:

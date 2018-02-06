@@ -35,7 +35,8 @@ class ProductList(BoxLayout):
 
 
 class PersonView(BoxLayout):
-    pass
+    name = StringProperty('Tomek')
+
 
 
 class PersonTitleBar(BoxLayout):
@@ -56,21 +57,38 @@ class MainView(BoxLayout):
         super().__init__(**kwargs)
         self.uuid = 0
 
-        self.add_prod_btn = self.ids.product_list.ids.add_prod_btn
-        self.add_prod_btn.bind(on_press=self.add_product)
+        # bind add_prod_btn to self.add_product
+        add_prod_btn = self.ids.product_list.ids.add_prod_btn
+        add_prod_btn.bind(on_press=self.add_product)
 
-        self.rm_prod_btn = self.ids.product_list.ids.rm_prod_btn
-        self.rm_prod_btn.bind(on_press=self.remove_product)
+        # bind rm_prod_btn to self.remove_product
+        rm_prod_btn = self.ids.product_list.ids.rm_prod_btn
+        rm_prod_btn.bind(on_press=self.remove_product)
 
+        # update_c_uuid if recent product button was pressed
         self.ids.product_list.bind(r_uuid=self.update_c_uuid)
 
-        self.add_person_btn = self.ids.product_view.ids.add_person_btn
-        self.add_person_btn.bind(on_press=self.add_person)
+        # add_person_btn bind
+        add_person_btn = self.ids.product_view.ids.add_person_btn
+        add_person_btn.bind(on_press=self.add_person)
 
 
     def update_c_uuid(self, instance, value):
         self.c_uuid = value
         print('MainView::update_c_uuid: {}'.format(self.c_uuid))
+        self._generate_product_view()
+
+    def _generate_product_view(self):
+        print("MainView::_generate_product_view")
+        c_prodname = str(list(self.products[self.c_uuid])[0])
+        self.ids.product_view.ids.product_name.text = c_prodname
+        people_widget = self.ids.product_view.ids.people
+        people_widget.clear_widgets()
+        for people in self.products[self.c_uuid][c_prodname]:
+            people_widget.add_widget(PersonView(name='Jacek'))
+
+
+
 
     def _get_uuid(self):
         self.uuid += 1
@@ -78,18 +96,18 @@ class MainView(BoxLayout):
 
     def add_product(self, instance):
         print('MainView::add_product')
-        prod_tmp_name = 'product_{}'.format(len(self.products))
-        prod_name = StringProperty(prod_tmp_name)
+        prod_name = 'product_{}'.format(len(self.products))
         prod_uuid = self._get_uuid()
-        self.ids.product_list.add_product(prod_tmp_name, prod_uuid)
+        self.ids.product_list.add_product(prod_name, prod_uuid)
         self.products[prod_uuid] = {prod_name: {}}
-        self.c_uuid = prod_uuid
+        self.update_c_uuid(None, prod_uuid)
+
 
     def remove_product(self, instance):
         try:
             self.ids.product_list.remove_product(self.c_uuid)
             self.products.pop(self.c_uuid)
-            self.c_uuid = max(self.products)
+            self.update_c_uuid(None, max(self.products))
             print('MainView::remove_widget, c_uuid: {}'.format(self.c_uuid))
         except (ValueError, KeyError):
             print("nothing to remove, c_uuid:{}".format(self.c_uuid))
@@ -99,6 +117,9 @@ class MainView(BoxLayout):
 
     def add_person(self, instance):
         print('MainView::add_person')
+        self.ids.product_view.add_person()
+        c_prodname = str(list(self.products[self.c_uuid])[0])
+        self.products[self.c_uuid][c_prodname]['Tomek'] = 123
 
 
 class LetsSettleApp(App):
