@@ -52,10 +52,12 @@ class ProductView(BoxLayout):
 class MainView(BoxLayout):
     products = DictProperty({})
     c_uuid = NumericProperty(0)
+    test = StringProperty('')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.uuid = 0
+        self.c_prodname = ''
 
         # bind add_prod_btn to self.add_product
         add_prod_btn = self.ids.product_list.ids.add_prod_btn
@@ -80,14 +82,26 @@ class MainView(BoxLayout):
 
     def _generate_product_view(self):
         print("MainView::_generate_product_view")
-        c_prodname = str(list(self.products[self.c_uuid])[0])
-        self.ids.product_view.ids.product_name.text = c_prodname
+        self.c_prodname = str(list(self.products[self.c_uuid])[0])
+        self.ids.product_view.ids.product_name.text = self.c_prodname
         people_widget = self.ids.product_view.ids.people
         people_widget.clear_widgets()
-        for people in self.products[self.c_uuid][c_prodname]:
-            people_widget.add_widget(PersonView(name='Jacek'))
+        for mate in self.products[self.c_uuid][self.c_prodname]:
+            person_widget = PersonView(name=mate)
+            person_widget.ids.ammount.bind(text=self.mate_setter(mate))
+            people_widget.add_widget(person_widget)
+        print('Test::test: {}'.format(self.test))
 
+    def print_event_attr(self, *args):
+        print("EventArgs: {}".format(args))
 
+    def mate_setter(self, mate):
+        def setter(instance, value):
+            self.products[self.c_uuid][self.c_prodname][mate] = value
+        return setter
+
+    def update_mate_cost(self, *args, mate):
+        pass
 
 
     def _get_uuid(self):
@@ -102,7 +116,6 @@ class MainView(BoxLayout):
         self.products[prod_uuid] = {prod_name: {}}
         self.update_c_uuid(None, prod_uuid)
 
-
     def remove_product(self, instance):
         try:
             self.ids.product_list.remove_product(self.c_uuid)
@@ -114,12 +127,14 @@ class MainView(BoxLayout):
         finally:
             print(self.products)
 
-
     def add_person(self, instance):
         print('MainView::add_person')
-        self.ids.product_view.add_person()
-        c_prodname = str(list(self.products[self.c_uuid])[0])
-        self.products[self.c_uuid][c_prodname]['Tomek'] = 123
+#        self.ids.product_view.add_person()
+        dflt_mate = "mate_{}"\
+                    .format(len(self.products[self.c_uuid][self.c_prodname]))
+
+        self.products[self.c_uuid][self.c_prodname][dflt_mate] = 0
+        self._generate_product_view()
 
 
 class LetsSettleApp(App):
