@@ -12,6 +12,9 @@ from kivy.properties import DictProperty, StringProperty, ListProperty, NumericP
 from copy import deepcopy
 from pprint import pprint
 from inspect import getmembers
+from kivy.clock import Clock
+import kivy.metrics
+
 
 class ProductList(BoxLayout):
     products = {}
@@ -36,7 +39,6 @@ class ProductList(BoxLayout):
 
 class PersonView(BoxLayout):
     name = StringProperty('Tomek')
-
 
 
 class PersonTitleBar(BoxLayout):
@@ -129,12 +131,18 @@ class MainView(BoxLayout):
 
     def add_person(self, instance):
         print('MainView::add_person')
-#        self.ids.product_view.add_person()
-        dflt_mate = "mate_{}"\
-                    .format(len(self.products[self.c_uuid][self.c_prodname]))
+        try:
+            #        self.ids.product_view.add_person()
+            mate_number = len(self.products[self.c_uuid][self.c_prodname])
+            dflt_mate = "mate_{}".format(mate_number)
 
-        self.products[self.c_uuid][self.c_prodname][dflt_mate] = 0
-        self._generate_product_view()
+            self.products[self.c_uuid][self.c_prodname][dflt_mate] = 0
+            self._generate_product_view()
+        except (KeyError):
+            print("no product for adding person to")
+        finally:
+            print(self.products)
+
 
 
 class LetsSettleApp(App):

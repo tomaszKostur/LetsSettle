@@ -1,3 +1,5 @@
+#:import sp kivy.metrics.sp
+
 <ProductList>:
     orientation: 'vertical'
     padding: 10
@@ -31,9 +33,20 @@
         active: True
     TextInput:
         id: ammount
+        multiline: False
+        font_size: self.height/2
+        padding_y: self.height/4
+        background_active: "./img1.png"
+        background_normal: "./img2.png"
+
         size_hint: (1, None)
-    Label:
+    TextInput:
         id: name
+        multiline: False
+        font_size: self.height/2
+        padding_y: self.height/4
+        background_active: "./img1.png"
+        background_normal: "./img2.png"
         size_hint: (1, None)
         text: root.name
 
