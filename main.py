@@ -39,6 +39,7 @@ class ProductList(BoxLayout):
 
 class PersonView(BoxLayout):
     name = StringProperty('Tomek')
+    cost = NumericProperty(0)
 
 
 class PersonTitleBar(BoxLayout):
@@ -88,23 +89,34 @@ class MainView(BoxLayout):
         self.ids.product_view.ids.product_name.text = self.c_prodname
         people_widget = self.ids.product_view.ids.people
         people_widget.clear_widgets()
-        for mate in self.products[self.c_uuid][self.c_prodname]:
-            person_widget = PersonView(name=mate)
-            person_widget.ids.ammount.bind(text=self.mate_setter(mate))
+        c_prod_dict = self.products[self.c_uuid][self.c_prodname]
+        for mate in c_prod_dict:
+            person_widget = PersonView(name=mate, cost=c_prod_dict[mate])
+            person_widget.ids.ammount.bind(text=self.mate_cost_setter(mate))
+            person_widget.ids.name.bind(text=self.mate_name_setter(mate))
             people_widget.add_widget(person_widget)
         print('Test::test: {}'.format(self.test))
 
     def print_event_attr(self, *args):
         print("EventArgs: {}".format(args))
 
-    def mate_setter(self, mate):
+    def mate_cost_setter(self, mate):
         def setter(instance, value):
             self.products[self.c_uuid][self.c_prodname][mate] = value
+        return setter
+
+    def mate_name_setter(self, mate):
+        def setter(instance, value):
+            self.products[self.c_uuid][self.c_prodname][value] =\
+                self.products[self.c_uuid][self.c_prodname].pop(mate)
+            self._generate_product_view()
         return setter
 
     def update_mate_cost(self, *args, mate):
         pass
 
+    def update_mate_name(self, *args):
+        pass
 
     def _get_uuid(self):
         self.uuid += 1
