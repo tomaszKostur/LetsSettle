@@ -88,35 +88,56 @@ class MainView(BoxLayout):
         self.c_prodname = str(list(self.products[self.c_uuid])[0])
         self.ids.product_view.ids.product_name.text = self.c_prodname
         people_widget = self.ids.product_view.ids.people
+        prod_name_input = self.ids.product_view.ids.product_name
+        prod_name_input.bind(focus=self.product_name_setter)
+
+        # clear all people from list
         people_widget.clear_widgets()
         c_prod_dict = self.products[self.c_uuid][self.c_prodname]
         for mate in c_prod_dict:
             person_widget = PersonView(name=mate, cost=c_prod_dict[mate])
             person_widget.ids.ammount.bind(text=self.mate_cost_setter(mate))
-            person_widget.ids.name.bind(text=self.mate_name_setter(mate))
+            person_widget.ids.name.bind(focus=self.mate_name_setter(mate))
             people_widget.add_widget(person_widget)
         print('Test::test: {}'.format(self.test))
 
     def print_event_attr(self, *args):
-        print("EventArgs: {}".format(args))
+        print("EventArgs: {}, focus: {}".format(args, args[0].focus))
+
+    def get_c_totalcost(self):
+        c_prod_costs = self.products[self.c_uuid][self.c_prodname]
+        c_totalcost = 0
+        try:
+            for mate_cost in c_prod_costs.values():
+                print("mc: {}".format(mate_cost))
+                c_totalcost += float(mate_cost)
+        except:
+            pass
+        return str(c_totalcost)
 
     def mate_cost_setter(self, mate):
         def setter(instance, value):
             self.products[self.c_uuid][self.c_prodname][mate] = value
+
+            # set value to total cost widget
+            self.ids.product_view.ids.total_cost.text = self.get_c_totalcost()
         return setter
 
     def mate_name_setter(self, mate):
         def setter(instance, value):
-            self.products[self.c_uuid][self.c_prodname][value] =\
-                self.products[self.c_uuid][self.c_prodname].pop(mate)
-            self._generate_product_view()
+            if not instance.focus:
+                print("on_focus")
+                self.products[self.c_uuid][self.c_prodname][instance.text] =\
+                    self.products[self.c_uuid][self.c_prodname].pop(mate)
+                self._generate_product_view()
         return setter
 
-    def update_mate_cost(self, *args, mate):
-        pass
-
-    def update_mate_name(self, *args):
-        pass
+    def product_name_setter(self, instance, value):
+        if not instance.focus:
+            c_prodbtn_wdgt = self.ids.product_list.products[self.c_uuid]
+            c_prodbtn_wdgt.text = instance.text
+            self.products[self.c_uuid][instance.text] =\
+                self.products[self.c_uuid].pop(self.c_prodname)
 
     def _get_uuid(self):
         self.uuid += 1
@@ -144,7 +165,6 @@ class MainView(BoxLayout):
     def add_person(self, instance):
         print('MainView::add_person')
         try:
-            #        self.ids.product_view.add_person()
             mate_number = len(self.products[self.c_uuid][self.c_prodname])
             dflt_mate = "mate_{}".format(mate_number)
 
