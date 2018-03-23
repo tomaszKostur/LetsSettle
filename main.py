@@ -129,7 +129,7 @@ class MainView(BoxLayout):
                 print("on_focus")
                 self.products[self.c_uuid][self.c_prodname][instance.text] =\
                     self.products[self.c_uuid][self.c_prodname].pop(mate)
-                self._generate_product_view()
+                #self._generate_product_view()
         return setter
 
     def product_name_setter(self, instance, value):
@@ -138,6 +138,7 @@ class MainView(BoxLayout):
             c_prodbtn_wdgt.text = instance.text
             self.products[self.c_uuid][instance.text] =\
                 self.products[self.c_uuid].pop(self.c_prodname)
+            self.c_prodname = instance.text
 
     def _get_uuid(self):
         self.uuid += 1
