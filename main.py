@@ -8,7 +8,8 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.textinput import TextInput
-from kivy.properties import DictProperty, StringProperty, ListProperty, NumericProperty
+from kivy.properties import DictProperty, StringProperty, ListProperty,\
+                            NumericProperty, BooleanProperty
 from copy import deepcopy
 from pprint import pprint
 from inspect import getmembers
@@ -17,29 +18,64 @@ import kivy.metrics
 
 
 class ProductList(BoxLayout):
-    products = {}
-    r_uuid = NumericProperty()
-    def add_product(self, name, uuid):
-        product_button = Button(size_hint=(1, None), height=100,
-                                text=name)
-        product_button.uuid = uuid
-        self.products[uuid] = product_button
-        self.ids.products.add_widget(product_button)
+    """
+    Well, the most important idea is, the only interface of the widget are it's
+    two properties: 'prod_list, and 'last_selected'.
+    'prod_list' is designed to be input of the widget. Adding/edit elements to
+        'prod_list' causes adding/edit buttons to the widget.
+    'last_selected' is designed to be output of the widegt. It's value is
+        allways name of last touched button on products (see id :products)
+    """
+    prod_list = ListProperty([])
+    last_selected = StringProperty("")
 
-        product_button.bind(on_press=self.get_pressed_uuid)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.widget_list = []
+        self.minimum_height = 20
 
-    def get_pressed_uuid(self, instance):
-        print('presed uuid: {}'.format(instance.uuid))
-        self.r_uuid = instance.uuid
+        # TODO It looks like there are no ids yet. First widgets cannot be added via:
+        # self.ids.products.add_widget(prod_btn)
+#        self._draw_prodlist()
 
-    def remove_product(self, uuid):
-        self.ids.products.remove_widget(self.products[uuid])
-        self.products.pop(uuid)
+    def _draw_prodlist(self):
+        print('PL::pl: {}'.format(self.prod_list))
+        self.ids.products.clear_widgets()
+        for name in self.prod_list:
+            prod_btn = Button(text=name, size_hint=(1, None), height=100)
+            self.widget_list.append(prod_btn)
+            prod_btn.bind(on_press=self._last_selected)
+            print("DEBUG::{}".format(self.ids))
+            self.ids.products.add_widget(prod_btn)
+
+    def _last_selected(self, instance):
+        self.last_selected = instance.text
+        print("Prodlist::last_selected: {}".format(self.last_selected))
+
+    def on_prod_list(self, instance, value):
+        self._draw_prodlist()
 
 
-class PersonView(BoxLayout):
-    name = StringProperty('Tomek')
-    cost = NumericProperty(0)
+class MateWidget(BoxLayout):
+    """
+    The widegt represents bar of name and costs of one person.
+    It should be used only as widgets added to ProductView.
+    """
+    q_num = NumericProperty(0)
+    mate_name = StringProperty("Tomek")
+    mate_cost = NumericProperty("77")
+    is_used = BooleanProperty(True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def update_cost_p(self):
+        self.mate_cost = self.ids.cost_w.text
+        print("MateWidget::mate_cost: {}".format(self.mate_cost))
+
+    def update_name_p(self):
+        self.mate_name = self.ids.name_w.text
+        print("MateWidget::mante_name: {}".format(self.mate_name))
 
 
 class PersonTitleBar(BoxLayout):
@@ -47,135 +83,44 @@ class PersonTitleBar(BoxLayout):
 
 
 class ProductView(BoxLayout):
+    prod_name = StringProperty("Product name")
+    people = ListProperty([["aaa", 123], ["bbb", 222]])
 
-    def add_person(self):
-        self.ids.people.add_widget(PersonView())
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.mate_widgets = []
+        self.total_cost = '999'
+
+        # TODO same as in ProductList
+#        self.redraw_mates()
+
+    def redraw_mates(self):
+        self.ids.mates_list.clear_widgets(self.mate_widgets)
+        for q_num, mate_obj in enumerate(self.people):
+            mate = MateWidget(mate_name=mate_obj[0],
+                              mate_cost=mate_obj[1],
+                              q_num=q_num,
+                              size_hint=(1, None),
+                              height=100)
+            mate.bind(mate_name=self.update_people)
+            mate.bind(mate_cost=self.update_people)
+            self.mate_widgets.append(mate)
+            self.ids.mates_list.add_widget(mate)
+
+    def update_people(self, instance, value):
+        print("ProdView_v2::update_people, instance:{} value:{}, q_num: {}"
+              .format(instance, value, instance.q_num))
+        self.people[instance.q_num][0] = instance.mate_name
+        self.people[instance.q_num][1] = instance.mate_cost
+
+    def on_people(self, instance, value):
+        self.redraw_mates()
 
 
 class MainView(BoxLayout):
     products = DictProperty({})
     c_uuid = NumericProperty(0)
     test = StringProperty('')
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.uuid = 0
-        self.c_prodname = ''
-
-        # bind add_prod_btn to self.add_product
-        add_prod_btn = self.ids.product_list.ids.add_prod_btn
-        add_prod_btn.bind(on_press=self.add_product)
-
-        # bind rm_prod_btn to self.remove_product
-        rm_prod_btn = self.ids.product_list.ids.rm_prod_btn
-        rm_prod_btn.bind(on_press=self.remove_product)
-
-        # update_c_uuid if recent product button was pressed
-        self.ids.product_list.bind(r_uuid=self.update_c_uuid)
-
-        # add_person_btn bind
-        add_person_btn = self.ids.product_view.ids.add_person_btn
-        add_person_btn.bind(on_press=self.add_person)
-
-
-    def update_c_uuid(self, instance, value):
-        self.c_uuid = value
-        print('MainView::update_c_uuid: {}'.format(self.c_uuid))
-        self._generate_product_view()
-
-    def _generate_product_view(self):
-        print("MainView::_generate_product_view")
-        self.c_prodname = str(list(self.products[self.c_uuid])[0])
-        self.ids.product_view.ids.product_name.text = self.c_prodname
-        people_widget = self.ids.product_view.ids.people
-        prod_name_input = self.ids.product_view.ids.product_name
-        prod_name_input.bind(focus=self.product_name_setter)
-
-        # clear all people from list
-        people_widget.clear_widgets()
-        c_prod_dict = self.products[self.c_uuid][self.c_prodname]
-        for mate in c_prod_dict:
-            person_widget = PersonView(name=mate, cost=c_prod_dict[mate])
-            person_widget.ids.ammount.bind(text=self.mate_cost_setter(mate))
-            person_widget.ids.name.bind(focus=self.mate_name_setter(mate))
-            people_widget.add_widget(person_widget)
-        print('Test::test: {}'.format(self.test))
-
-    def print_event_attr(self, *args):
-        print("EventArgs: {}, focus: {}".format(args, args[0].focus))
-
-    def get_c_totalcost(self):
-        c_prod_costs = self.products[self.c_uuid][self.c_prodname]
-        c_totalcost = 0
-        try:
-            for mate_cost in c_prod_costs.values():
-                print("mc: {}".format(mate_cost))
-                c_totalcost += float(mate_cost)
-        except:
-            pass
-        return str(c_totalcost)
-
-    def mate_cost_setter(self, mate):
-        def setter(instance, value):
-            self.products[self.c_uuid][self.c_prodname][mate] = value
-
-            # set value to total cost widget
-            self.ids.product_view.ids.total_cost.text = self.get_c_totalcost()
-        return setter
-
-    def mate_name_setter(self, mate):
-        def setter(instance, value):
-            if not instance.focus:
-                print("on_focus")
-                self.products[self.c_uuid][self.c_prodname][instance.text] =\
-                    self.products[self.c_uuid][self.c_prodname].pop(mate)
-                #self._generate_product_view()
-        return setter
-
-    def product_name_setter(self, instance, value):
-        if not instance.focus:
-            c_prodbtn_wdgt = self.ids.product_list.products[self.c_uuid]
-            c_prodbtn_wdgt.text = instance.text
-            self.products[self.c_uuid][instance.text] =\
-                self.products[self.c_uuid].pop(self.c_prodname)
-            self.c_prodname = instance.text
-
-    def _get_uuid(self):
-        self.uuid += 1
-        return self.uuid
-
-    def add_product(self, instance):
-        print('MainView::add_product')
-        prod_name = 'product_{}'.format(len(self.products))
-        prod_uuid = self._get_uuid()
-        self.ids.product_list.add_product(prod_name, prod_uuid)
-        self.products[prod_uuid] = {prod_name: {}}
-        self.update_c_uuid(None, prod_uuid)
-
-    def remove_product(self, instance):
-        try:
-            self.ids.product_list.remove_product(self.c_uuid)
-            self.products.pop(self.c_uuid)
-            self.update_c_uuid(None, max(self.products))
-            print('MainView::remove_widget, c_uuid: {}'.format(self.c_uuid))
-        except (ValueError, KeyError):
-            print("nothing to remove, c_uuid:{}".format(self.c_uuid))
-        finally:
-            print(self.products)
-
-    def add_person(self, instance):
-        print('MainView::add_person')
-        try:
-            mate_number = len(self.products[self.c_uuid][self.c_prodname])
-            dflt_mate = "mate_{}".format(mate_number)
-
-            self.products[self.c_uuid][self.c_prodname][dflt_mate] = 0
-            self._generate_product_view()
-        except (KeyError):
-            print("no product for adding person to")
-        finally:
-            print(self.products)
-
 
 
 class LetsSettleApp(App):

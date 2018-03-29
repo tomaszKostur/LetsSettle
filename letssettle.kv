@@ -5,8 +5,8 @@
     ScrollView:
         BoxLayout:
             id: products
-            size_hint_y: None
             height: self.minimum_height
+            size_hint_y: None
             spacing: 10
             orientation: 'vertical'
 
@@ -15,104 +15,76 @@
         text: 'Remove Product'
         size_hint: (1, None)
         height: 100
+        on_press: root.prod_list.pop()
 
     Button:
         id: add_prod_btn
         text: 'Add Product'
         size_hint: (1, None)
         height: 100
+        on_press: root.prod_list.append("Product")
 
-<PersonView>:
-    # bar representing one person
-    name: 'Mate Name'
-    cont: 'Mate Cost'
-    orientation: 'horizontal'
-    size_hint: (1, None)
-    CheckBox:
-        id: used
-        size_hint: (1, None)
-        active: True
+<MateWidget>:
+    CheckBox
     TextInput:
-        id: ammount
-        multiline: False
-        font_size: self.height/2
-        padding_y: self.height/4
-        background_active: "./img1.png"
-        background_normal: "./img2.png"
-        size_hint: (1, None)
-        text: str(root.cost)
+        id: cost_w
+        text: str(root.mate_cost)
+        on_text: root.update_cost_p()
     TextInput:
-        id: name
-        multiline: False
-        font_size: self.height/2
-        padding_y: self.height/4
-        background_active: "./img1.png"
-        background_normal: "./img2.png"
-        size_hint: (1, None)
-        text: root.name
+        id: name_w
+        text: root.mate_name
+        on_text: root.update_name_p()
 
-<PersonTitleBar>:
-    orientation: 'horizontal'
-    size_hint: (1, None)
-    Label:
-        size_hint: (1, None)
-        text: 'Used'
-    Label:
-        size_hint: (1, None)
-        text: 'Paid'
-    Label:
-        size_hint: (1, None)
-        text: 'Name'
 
 <ProductView>:
     orientation: 'vertical'
     padding: 10
     spacing: 10
     TextInput:
-        id: product_name
-        multiline: False
-        font_size: self.height/2
-        padding_y: self.height/4
-        background_active: "./img1.png"
-        background_normal: "./img2.png"
-        text: 'Product'
         size_hint: (1, None)
         height: 100
+        text: root.prod_name
     BoxLayout:
         size_hint: (1, None)
         height: 100
         Label:
-            text: 'Total cost:'
+            text: 'Total cost'
         Label:
-            id: total_cost
-            text: '0'
-    PersonTitleBar
+            text: root.total_cost
+    BoxLayout:
+        size_hint: (1, None)
+        height: 100
+        Label:
+            text: 'Used'
+        Label:
+            text: 'Cost'
+        Label:
+            text: 'Mate name'
     ScrollView:
         BoxLayout:
+            id: mates_list
+            size_hint_y: None
             orientation: 'vertical'
-            id: people
-            size_hint: (1, None)
             height: self.minimum_height
 
     Button:
-        id: rm_person_btn
-        text: 'Remove Person'
+        id: rm_mate
+        text: "Remove Mate"
         size_hint: (1, None)
         height: 100
-        on_press: print(root.parent.products)
+
+        on_press: root.people.pop()
 
     Button:
-        id: add_person_btn
-        text: 'Add Person'
+        id: add_mate
+        text: "Add Mate"
         size_hint: (1, None)
         height: 100
 
+        on_press: root.people.append(["Mate", 0])
 
 <MainView>:
-    id: main_view
     orientation: 'horizontal'
-    ProductList
-        size_hint: (.25, 1)
-        id: product_list
+    ProductList:
+        size_hint: (0.5, 1)
     ProductView
-        id: product_view
