@@ -9,7 +9,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.textinput import TextInput
 from kivy.properties import DictProperty, StringProperty, ListProperty,\
-                            NumericProperty, BooleanProperty
+                            NumericProperty, BooleanProperty, ObjectProperty
 from copy import deepcopy
 from pprint import pprint
 from inspect import getmembers
@@ -27,16 +27,20 @@ class ProductList(BoxLayout):
         allways name of last touched button on products (see id :products)
     """
     prod_list = ListProperty([])
-    last_selected = StringProperty("")
+    last_selected = NumericProperty(0)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.widget_list = []
         self.minimum_height = 20
 
-        # TODO It looks like there are no ids yet. First widgets cannot be added via:
+        # TODO It looks like there are no ids yet.
+        # First widgets cannot be added via:
         # self.ids.products.add_widget(prod_btn)
 #        self._draw_prodlist()
+
+    def get_last_selected_name(self):
+        return self.prod_list[self.last_selected]
 
     def _draw_prodlist(self):
         print('PL::pl: {}'.format(self.prod_list))
@@ -49,12 +53,15 @@ class ProductList(BoxLayout):
             self.ids.products.add_widget(prod_btn)
 
     def _last_selected(self, instance):
-        self.last_selected = instance.text
+        self.last_selected = self.prod_list.index(instance.text)
         print("Prodlist::last_selected: {}".format(self.last_selected))
 
     def on_prod_list(self, instance, value):
         self._draw_prodlist()
 
+    def _new_product(self):
+        self.prod_list.append("Product")
+        self.last_selected = len(self.prod_list)
 
 class MateWidget(BoxLayout):
     """
@@ -84,7 +91,9 @@ class PersonTitleBar(BoxLayout):
 
 class ProductView(BoxLayout):
     prod_name = StringProperty("Product name")
-    people = ListProperty([["aaa", 123], ["bbb", 222]])
+    # people slould contain lists, representing one person
+    # for now one person pattern is list: [<person name>, <person cost>]
+    people = ListProperty([])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -116,11 +125,28 @@ class ProductView(BoxLayout):
     def on_people(self, instance, value):
         self.redraw_mates()
 
+    def update_prodname(self):
+        self.prod_name = self.ids.prodname.text
+
 
 class MainView(BoxLayout):
-    products = DictProperty({})
-    c_uuid = NumericProperty(0)
-    test = StringProperty('')
+    products = [{}] # TODO this list should contain all data ...
+
+    def update_prodlist(self):
+        print("DEBUG::MainView.update_prodlist")
+        index = self.ids.prodlist.last_selected
+        self.ids.prodlist.prod_list[index] = self.ids.prodview.prod_name
+
+    def redraw_prodview(self):
+        self.ids.prodview.prod_name = self.ids.prodlist.get_last_selected_name()
+        self.ids.prodview.people = [['kon', 1],['slon',2]]
+
+#    def _dump_prodview_data(self):
+#        self.products[self.ids.prodlist.last_selected] =\
+#
+#        return {'name': self.ids.prodview.prod_name,
+#                'people':deepcopy(self.ids.prodview.people)}
+
 
 
 class LetsSettleApp(App):

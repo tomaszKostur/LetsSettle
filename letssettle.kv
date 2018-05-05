@@ -41,9 +41,11 @@
     padding: 10
     spacing: 10
     TextInput:
+        id: prodname
         size_hint: (1, None)
         height: 100
         text: root.prod_name
+        on_text: root.update_prodname()
     BoxLayout:
         size_hint: (1, None)
         height: 100
@@ -86,5 +88,9 @@
 <MainView>:
     orientation: 'horizontal'
     ProductList:
+        id: prodlist
         size_hint: (0.5, 1)
-    ProductView
+        on_last_selected: root.redraw_prodview()
+    ProductView:
+        id: prodview
+        on_prod_name: root.update_prodlist()
